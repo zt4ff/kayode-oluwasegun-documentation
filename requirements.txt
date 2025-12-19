@@ -1,3 +1,5 @@
 mkdocs
 mkdocs-shadcn
 pymdown-extensions
+pyyaml-include
+mkdocs-material
