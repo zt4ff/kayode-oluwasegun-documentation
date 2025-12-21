@@ -404,3 +404,95 @@ func main() {
 	http.ListenAndServe(":8000", nil)
 }
 ```
+
+## Chapter 2
+
+### Exercise 2.1: Add types, constants, and functions to tempconv for processing temperatures in the Kelvin scale, where zero Kelvin is −273.15°C and a difference of 1K has the same magnitude as 1°C.
+
+```go
+package tempconv
+
+type Kelvin float64
+
+const AbsoluteZeroC Celsius = -273.15
+
+func CToK(c Celsius) Kelvin {
+	return Kelvin(c - AbsoluteZeroC)
+}
+
+func KToC(k Kelvin) Celsius {
+	return Celsius(k) + AbsoluteZeroC
+}
+
+func FToK(f Fahrenheit) Kelvin {
+	return CToK(FToC(f))
+}
+
+func KToF(k Kelvin) Fahrenheit {
+	return CToF(KToC(k))
+}
+```
+
+### Exercise 2.2: Write a general-purpose unit-conversion program analogous to cf that reads numbers from its command-line arguments or from the standard input if there are no arguments, and converts each number into units like temperature in Celsius and Fahren heit, length in feet and meters, weig ht in pounds and kilograms, and the like.
+
+```go
+package main
+
+import (
+	"bufio"
+	"fmt"
+	"os"
+	"strconv"
+)
+
+type Celsius float64
+type Fahrenheit float64
+type Feet float64
+type Meters float64
+type Pounds float64
+type Kilograms float64
+
+func CToF(c Celsius) Fahrenheit { return Fahrenheit(c*9/5 + 32) }
+func FToC(f Fahrenheit) Celsius { return Celsius((f - 32) * 5 / 9) }
+
+func FtToM(f Feet) Meters       { return Meters(f * 0.3048) }
+func MToFt(m Meters) Feet       { return Feet(m / 0.3048) }
+
+func LbToKg(p Pounds) Kilograms { return Kilograms(p * 0.45359237) }
+func KgToLb(k Kilograms) Pounds { return Pounds(k / 0.45359237) }
+
+func convert(v float64) {
+	c := Celsius(v)
+	f := Fahrenheit(v)
+	ft := Feet(v)
+	m := Meters(v)
+	lb := Pounds(v)
+	kg := Kilograms(v)
+
+	fmt.Printf("%g°C = %g°F, %g°F = %g°C\n", c, CToF(c), f, FToC(f))
+	fmt.Printf("%gft = %gm, %gm = %gft\n", ft, FtToM(ft), m, MToFt(m))
+	fmt.Printf("%glb = %gkg, %gkg = %glb\n", lb, LbToKg(lb), kg, KgToLb(kg))
+}
+
+func main() {
+	if len(os.Args) > 1 {
+		for _, arg := range os.Args[1:] {
+			v, err := strconv.ParseFloat(arg, 64)
+			if err != nil {
+				continue
+			}
+			convert(v)
+		}
+		return
+	}
+
+	in := bufio.NewScanner(os.Stdin)
+	for in.Scan() {
+		v, err := strconv.ParseFloat(in.Text(), 64)
+		if err != nil {
+			continue
+		}
+		convert(v)
+	}
+}
+```
