@@ -561,3 +561,83 @@ func PopCountClear(x uint64) int {
 	return n
 }
 ```
+
+## Chaper 3
+
+### Exercise 3.1: If the function f returns a non-finite float64 value, the SVG file will contain invalid <polygon> elements (although many SVG renderers handle this gracefully). Modify the program to skip invalid polygons.
+
+```go
+package main
+
+import (
+	"fmt"
+	"math"
+)
+
+const (
+	width, height = 600, 320
+	cells         = 100
+	xyrange       = 30.0
+)
+
+func main() {
+	fmt.Printf("<svg xmlns='http://www.w3.org/2000/svg' width='%d' height='%d'>", width, height)
+	for i := 0; i < cells; i++ {
+		for j := 0; j < cells; j++ {
+			ax, ay, ok1 := corner(i+1, j)
+			bx, by, ok2 := corner(i, j)
+			cx, cy, ok3 := corner(i, j+1)
+			dx, dy, ok4 := corner(i+1, j+1)
+			if !(ok1 && ok2 && ok3 && ok4) {
+				continue
+			}
+			fmt.Printf("<polygon points='%g,%g %g,%g %g,%g %g,%g'/>", ax, ay, bx, by, cx, cy, dx, dy)
+		}
+	}
+	fmt.Println("</svg>")
+}
+
+func corner(i, j int) (float64, float64, bool) {
+	x := xyrange * (float64(i)/cells - 0.5)
+	y := xyrange * (float64(j)/cells - 0.5)
+	z := f(x, y)
+	if math.IsNaN(z) || math.IsInf(z, 0) {
+		return 0, 0, false
+	}
+	sx := width/2 + (x-y)*math.Cos(math.Pi/6)*width/xyrange/2
+	sy := height/2 + (x+y)*math.Sin(math.Pi/6)*width/xyrange/2 - z*height*0.4
+	if math.IsNaN(sx) || math.IsNaN(sy) || math.IsInf(sx, 0) || math.IsInf(sy, 0) {
+		return 0, 0, false
+	}
+	return sx, sy, true
+}
+
+func f(x, y float64) float64 {
+	r := math.Hypot(x, y)
+	return math.Sin(r) / r
+}
+```
+
+### Exercise 3.2: Experiment with visualizations of other functions fro m the math package. Can you produce an egg box, moguls, or a saddle?
+
+### Exercise 3.3: Color each polygon based on its height, so that the peaks are colored red(#ff0000) and the val leys blue (#0000ff).
+
+### Exercise 3.4: Following the approach of the Lissajous example in Section 1.7, construct a web server that computes surfaces and writes SVG data to the client. The server must set the Content-Type header like this: `w.Header().Set("Content-Type", "image/svg+xml")`
+
+### Exercise 3.5: Implement a full-color Mandelbrot set using the function image.NewRGBA and the type color.RGBA or color.YCbCr.
+
+### Exercise 3.6: Supersampling is a technique to reduce the effect of pixelation by computing the color value at several points wit hin each pixel and taking the average. The simplest method is to divide each pixel into four ‘‘subpixels. ’’ Implement it.
+
+### Exercise 3.7: Another simple fractal uses Newton’s method to find complex solutions to a function such as z4−1 = 0. Shade each starting point by the number of iterations required to et close to one of the four roots. Color each point by the root it approaches.
+
+### Exercise 3.8: Render ing fractals at high zoom levels demands great arithmetic precision. Implement the same fractal using four different representations of numbers: complex64, complex128, big.Float, and big.Rat. (The latter two types are found in the math/big package. Float uses arbitrary but bounded-precision floating-point; Rat uses unbounded-precision rational numbers.) How do they comp are in performance and memory usage? At what zoom levels do render ing artifacts become visible?
+
+### Exercise 3.9: Write a web ser ver that renders fractals and writes the image data to the client. Allow the client to specify the x, y, and zoom values as parameters to the HTTP request.
+
+### Exercise 3.10: Write a non-rec ursive version of comma, using bytes.Buffer instead of string concatenation.
+
+### Exercise 3.11: Enhance comma so that it deals correctly with floating-point numbers and an optional sign.
+
+### Exercise 3.12: Write a function that rep orts whether two strings are anagrams of each other, that is, they contain the same letters in a different order.
+
+### Exercise 3.13: Wr ite const declarations for KB, MB, up through YB as compactly as you can.
