@@ -20,4 +20,4 @@ nav:
       - The Shelf: reading/the-shelf.md
       - Books:
           - Read:
-              - "21 The Go Programming Language": reading/books/read/the-go-programming-language.md
+              - "The Go Programming Language": reading/books/read/the-go-programming-language.md
