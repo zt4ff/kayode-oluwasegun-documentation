@@ -2,7 +2,7 @@ title: Welcome to My Public Vault
 
 # Welcome to My Public Vault
 
-> Welcome to my public personal knowledge hub, where I share insights, notes, and resources on software engineering, distributed systems and backend engineering. This vault is designed to help both myself and others learn and explore topics in depth. Please note that this knowledge hub is a work in progress and will be continuously updated with new insights and resources.
+> Welcome to my public personal knowledge hub, where I share insights, notes, and resources on software engineering, distributed systems and backend engineering. This vault is designed to help both myself and others learn and explore topics in depth. Please note that this knowledge hub is a work in progress and will be continuously updated with new ideas, insights and resources.
 
 ## 📌 Categories
 
