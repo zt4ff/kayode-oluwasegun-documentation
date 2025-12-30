@@ -1,16 +1,20 @@
 site_name: "Kayode Oluwasegun"
-
+repo_url: "https://github.com/zt4ff/kayode-oluwasegun-documentation"
+site_author: Kayode Oluwasegun
 theme:
-  name: shadcn
-  features:
-    - navigation.sections
-    - navigation.expand
-    - navigation.sidebar
+  name: cinder
+  highlightjs: true
+  disable_nav_previous_next: true
+  hljs_languages:
+    - go
+    - yaml
 
 nav:
   - Home: index.md
   - Reading:
       - The Shelf: reading/the-shelf.md
-      - Books:
-          - Read:
-              - "The Go Programming Language": reading/books/read/the-go-programming-language.md
+      - Books Read:
+          - "The Go Programming Language": reading/books/read/the-go-programming-language.md
+
+markdown_extensions:
+  - admonition
