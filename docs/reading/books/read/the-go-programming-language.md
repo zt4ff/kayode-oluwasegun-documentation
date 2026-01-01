@@ -2600,6 +2600,7 @@ Change the findlinks program to traverse the n.FirstChild linked list using recu
 
 ```go
 package main
+
 import (
 	"fmt"
 	"os"
@@ -2614,8 +2615,8 @@ func visit(links []string, n *html.Node) []string {
 
 	if n.Type == html.ElementNode && n.Data == "a" {
 		for _, a := range n.Attr {
-			if a.key == "href" {
-				links = append(links, a.val)
+			if a.Key == "href" {
+				links = append(links, a.Val)
 			}
 		}
 	}
@@ -2637,6 +2638,7 @@ func main() {
 		fmt.Println(link)
 	}
 }
+
 ```
 
 ### Exercise 5.2
