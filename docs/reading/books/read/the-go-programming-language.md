@@ -2641,10 +2641,47 @@ func main() {
 
 ### Exercise 5.2
 
-Write a function to populate a mapping from element names—p, div, span, and so on—to the number of elements with that name in an HTML document tree.
+Write a function to populate a mapping from element names p, div, span, and so on—to the number of elements with that name in an HTML document tree.
 
 ```go
+package main
 
+import (
+	"fmt"
+	"os"
+
+	"golang.org/x/net/html"
+)
+
+func countElements(n *html.Node, counts map[string]int) {
+	if n == nil {
+		return
+	}
+
+	if n.Type == html.ElementNode {
+		counts[n.Data]++
+	}
+
+	countElements(n.FirstChild, counts)
+
+	countElements(n.NextSibling, counts)
+}
+
+func main() {
+	doc, err := html.Parse(os.Stdin)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "countElements: %v\n", err)
+		os.Exit(1)
+	}
+
+	counts := make(map[string]int)
+	countElements(doc, counts)
+
+	fmt.Println("Element counts:")
+	for element, count := range counts {
+		fmt.Printf("%s: %d\n", element, count)
+	}
+}
 ```
 
 ### Exercise 5.3
