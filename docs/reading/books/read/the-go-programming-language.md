@@ -596,7 +596,7 @@ func PopCountClear(x uint64) int {
 }
 ```
 
-## Chaper 3
+## Chapter 3
 
 ### Exercise 3.1
 
@@ -2590,4 +2590,75 @@ func main() {
 
 	fmt.Printf("Poster for '%s' saved as %s\n", movie.Title, filename)
 }
+```
+
+## Chapter 5
+
+### Exercise 5.1
+
+Change the findlinks program to traverse the n.FirstChild linked list using recursive calls to visit instead of a loop.
+
+```go
+package main
+import (
+	"fmt"
+	"os"
+
+	"golang.org/x/net/html"
+)
+
+func visit(links []string, n *html.Node) []string {
+	if n == nil {
+		return links
+	}
+
+	if n.Type == html.ElementNode && n.Data == "a" {
+		for _, a := range n.Attr {
+			if a.key == "href" {
+				links = append(links, a.val)
+			}
+		}
+	}
+
+	links = visit(links, n.FirstChild)
+
+	links = visit(links, n.NextSibling)
+
+	return links
+}
+
+func main() {
+	doc, err := html.Parse(os.Stdin)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "findlinks: %v\n", err)
+		os.Exit(1)
+	}
+	for _, link := range visit(nil, doc) {
+		fmt.Println(link)
+	}
+}
+```
+
+### Exercise 5.2
+
+Write a function to populate a mapping from element names—p, div, span, and so on—to the number of elements with that name in an HTML document tree.
+
+```go
+
+```
+
+### Exercise 5.3
+
+Write a function to print the contents of all text nodes in an HTML document tree. Do not descend into <script> or <style> elements, since their contents are not visible in a web browser.
+
+```go
+
+```
+
+### Exercise 5.4
+
+Extend the visit function so that it extracts other kinds of links from the document, such as images, scripts, and style she ets
+
+```go
+
 ```
