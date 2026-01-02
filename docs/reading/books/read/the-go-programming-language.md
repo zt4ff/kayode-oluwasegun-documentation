@@ -1788,7 +1788,7 @@ func main() {
 
 ### Exercise 4.9
 
-Write a program wordfreq to rep ort the frequency of each word in an input text file. Call input.Split(bufio.ScanWords) before the first call to Scan to break the input into words instead of lines.
+Write a program wordfreq to report the frequency of each word in an input text file. Call input.Split(bufio.ScanWords) before the first call to Scan to break the input into words instead of lines.
 
 ```go
 package main
@@ -2785,6 +2785,97 @@ func main() {
 
 	for _, link := range visit(nil, doc) {
 		fmt.Println(link)
+	}
+}
+```
+
+### Exercise 5.5
+
+Implement countWordsAndImages. (See Exercise 4.9 for word-splitting.)
+
+```go
+package main
+
+import (
+	"bufio"
+	"fmt"
+	"net/http"
+	"os"
+	"strings"
+
+	"golang.org/x/net/html"
+)
+
+func countWordsAndImages(url string) (words, images int, err error) {
+	resp, err := http.Get(url)
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+
+	doc, err := html.Parse(resp.Body)
+	if err != nil {
+		err = fmt.Errorf("parsing HTML: %s", err)
+		return
+	}
+
+	words, images = countWordsAndImagesHelper(doc)
+	return
+}
+
+func countWordsAndImagesHelper(n *html.Node) (words, images int) {
+	if n == nil {
+		return 0, 0
+	}
+
+	if n.Type == html.ElementNode && (n.Data == "script" || n.Data == "style") {
+		return 0, 0
+	}
+
+	if n.Type == html.ElementNode && n.Data == "img" {
+		images++
+	}
+
+	if n.Type == html.TextNode {
+		words += countWords(n.Data)
+	}
+
+	childWords, childImages := countWordsAndImagesHelper(n.FirstChild)
+	words += childWords
+	images += childImages
+
+	siblingWords, siblingImages := countWordsAndImagesHelper(n.NextSibling)
+	words += siblingWords
+	images += siblingImages
+
+	return
+}
+
+func countWords(text string) int {
+	scanner := bufio.NewScanner(strings.NewReader(text))
+	scanner.Split(bufio.ScanWords)
+
+	count := 0
+	for scanner.Scan() {
+		count++
+	}
+
+	return count
+}
+
+func main() {
+	if len(os.Args) < 2 {
+		fmt.Fprintf(os.Stderr, "usage: %s URL...\n", os.Args[0])
+		os.Exit(1)
+	}
+
+	for _, url := range os.Args[1:] {
+		words, images, err := countWordsAndImages(url)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "error: %v\n", err)
+			continue
+		}
+		fmt.Printf("%s: %d words, %d images\n", url, words, images)
 	}
 }
 ```
