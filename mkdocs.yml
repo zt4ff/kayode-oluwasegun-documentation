@@ -21,7 +21,3 @@ markdown_extensions:
 
 extra_javascript:
   - js/gtag.js
-
-google_analytics:
-  - "G-WT1YB68QH0"
-  - "auto"
