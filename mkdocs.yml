@@ -20,4 +20,4 @@ markdown_extensions:
   - admonition
 
 extra_javascript:
-  - js/vercel-analytics.js
+  -
