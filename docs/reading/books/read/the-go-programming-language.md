@@ -731,7 +731,6 @@ func saddle(x, y float64) float64 {
 	return (x*x - y*y) / 300
 }
 
-// Use one of the above functions
 func f(x, y float64) float64 {
 	return saddle(x, y)
 }
@@ -2878,4 +2877,12 @@ func main() {
 		fmt.Printf("%s: %d words, %d images\n", url, words, images)
 	}
 }
+```
+
+### Exercise 5.6
+
+Modify the corner function in gopl.io/ch3/surface (§3.2) to use named results and a bare return statement.
+
+```go
+
 ```
