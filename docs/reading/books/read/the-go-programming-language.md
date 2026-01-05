@@ -2960,3 +2960,129 @@ func f(x, y float64) float64 {
 	return saddle(x, y)
 }
 ```
+
+### Exercise 5.7
+
+Develop startElement and endElement into a general HTML pretty-printer. Print comment nodes, text nodes, and the attributes of each element (<a href='...'>). Use short forms like <img/> instead of <img></img> when an element has no children. Write a test to ens ure that the output can be parsed successfully.
+
+```go
+package main
+
+import (
+	"fmt"
+	"io"
+	"net/http"
+	"os"
+	"strings"
+
+	"golang.org/x/net/html"
+)
+
+func prettyPrint(n *html.Node, w io.Writer, depth int) {
+	indent := strings.Repeat("	", depth)
+
+	switch n.Type {
+	case html.ErrorNode:
+		// skip error node
+		return
+
+	case html.TextNode:
+		text := strings.TrimSpace(n.Data)
+		if text != "" {
+			fmt.Fprintf(w, "%s%s\n", indent, text)
+		}
+
+	case html.DocumentNode:
+		for c := n.FirstChild; c != nil; c = c.NextSibling {
+			prettyPrint(c, w, depth)
+		}
+
+	case html.ElementNode:
+		fmt.Fprintf(w, "%s<%s", indent, n.Data)
+		for _, attr := range n.Attr {
+			fmt.Fprintf(w, " %s='%s'", attr.Key, attr.Val)
+		}
+
+		if n.FirstChild == nil {
+			// self closing tag
+			fmt.Fprintf(w, "/>\n")
+		} else {
+			fmt.Fprintf(w, ">\n")
+
+			// process children
+			for c := n.FirstChild; c != nil; c = c.NextSibling {
+				prettyPrint(c, w, depth+1)
+			}
+
+			fmt.Fprintf(w, "%s</%s>\n", indent, n.Data)
+		}
+
+	case html.CommentNode:
+		fmt.Fprintf(w, "%s<!--%s-->\n", indent, n.Data)
+
+	case html.DoctypeNode:
+		fmt.Fprintf(w, "<!DOCTYPE %s>\n", n.Data)
+	}
+}
+
+func prettyPrintHTML(doc *html.Node) string {
+	var sb strings.Builder
+	prettyPrint(doc, &sb, 0)
+	return sb.String()
+}
+
+func main() {
+	if len(os.Args) > 1 {
+		url := os.Args[1]
+		resp, err := http.Get(url)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "fetch: %v\n", err)
+			os.Exit(1)
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			fmt.Fprintf(os.Stderr, "fetch: %s\n", resp.Status)
+			os.Exit(1)
+		}
+
+		doc, err := html.Parse(resp.Body)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "parse: %v\n", err)
+			os.Exit(1)
+		}
+
+		prettyPrint(doc, os.Stdout, 0)
+	} else {
+		sampleHTML := `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sample Page</title>
+</head>
+<body>
+    <!-- This is a comment -->
+    <div class="container" id="main">
+        <h1>Hello, World!</h1>
+        <p>This is a <strong>sample</strong> paragraph with <a href="https://example.com">a link</a>.</p>
+        <img src="image.png" alt="Sample image"/>
+        <ul>
+            <li>Item 1</li>
+            <li>Item 2</li>
+            <li>Item 3</li>
+        </ul>
+    </div>
+</body>
+</html>`
+
+		doc, err := html.Parse(strings.NewReader(sampleHTML))
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "parse: %v\n", err)
+			os.Exit(1)
+		}
+
+		fmt.Println("=== Pretty-Printed HTML ===")
+		prettyPrint(doc, os.Stdout, 0)
+	}
+}
+```
