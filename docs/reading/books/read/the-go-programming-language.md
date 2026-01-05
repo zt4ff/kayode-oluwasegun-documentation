@@ -705,14 +705,14 @@ func corner(i, j int) (float64, float64, bool) {
 
 	z := f(x, y)
 
-	if !math.IsFinite(z) {
+	if math.IsInf(z, 0) || math.IsNaN(z) {
 		return 0, 0, false
 	}
 
 	sx := width/2 + (x-y)*cos30*xyscale
 	sy := height/2 + (x+y)*sin30*xyscale - z*zscale
 
-	if !math.IsFinite(sx) || !math.IsFinite(sy) {
+	if math.IsInf(sx, 0) || math.IsNaN(sx) || math.IsInf(sy, 0) || math.IsNaN(sy) {
 		return 0, 0, false
 	}
 
@@ -2881,8 +2881,82 @@ func main() {
 
 ### Exercise 5.6
 
-Modify the corner function in gopl.io/ch3/surface (§3.2) to use named results and a bare return statement.
+Modify the corner function in gopl.io/ch3/surface (Exercise 3.2) to use named results and a bare return statement.
 
 ```go
+package main
 
+import (
+	"fmt"
+	"math"
+)
+
+const (
+	width, height = 600, 320
+	cells         = 100
+	xyrange       = 30.0
+	xyscale       = width / 2 / xyrange
+	zscale        = height * 0.4
+	angle         = math.Pi / 6
+)
+
+var sin30, cos30 = math.Sin(angle), math.Cos(angle)
+
+func main() {
+	fmt.Printf("<svg xmlns='http://www.w3.org/2000/svg' "+
+		"style='stroke: grey; fill: white; stroke-width: 0.7' "+
+		"width='%d' height='%d'>", width, height)
+	for i := 0; i < cells; i++ {
+		for j := 0; j < cells; j++ {
+			ax, ay, ok1 := corner(i+1, j)
+			bx, by, ok2 := corner(i, j)
+			cx, cy, ok3 := corner(i, j+1)
+			dx, dy, ok4 := corner(i+1, j+1)
+
+			if !ok1 || !ok2 || !ok3 || !ok4 {
+				continue
+			}
+
+			fmt.Printf("<polygon points='%g,%g %g,%g %g,%g %g,%g'/>\n",
+				ax, ay, bx, by, cx, cy, dx, dy)
+		}
+	}
+	fmt.Println("</svg>")
+}
+
+func corner(i, j int) (sx, sy float64, done bool) {
+	x := xyrange * (float64(i)/cells - 0.5)
+	y := xyrange * (float64(j)/cells - 0.5)
+
+	z := f(x, y)
+
+	if math.IsInf(z, 0) || math.IsNaN(z) {
+		return 0, 0, false
+	}
+
+	sx = width/2 + (x-y)*cos30*xyscale
+	sy = height/2 + (x+y)*sin30*xyscale - z*zscale
+
+	if math.IsInf(sx, 0) || math.IsNaN(sx) || math.IsInf(sy, 0) || math.IsNaN(sy) {
+		return 0, 0, false
+	}
+
+	return sx, sy, true
+}
+
+func eggBox(x, y float64) float64 {
+	return math.Sin(x) + math.Sin(y)
+}
+
+func moguls(x, y float64) float64 {
+	return math.Sin(x) * math.Cos(y) * 10
+}
+
+func saddle(x, y float64) float64 {
+	return (x*x - y*y) / 300
+}
+
+func f(x, y float64) float64 {
+	return saddle(x, y)
+}
 ```
