@@ -3266,5 +3266,50 @@ func main() {
 ### Exercise 5.9: Write a function expand(s string, f func(string) string) string that replaces each substring ‘‘$foo’’ within s by the text returned by f("foo").
 
 ```go
+package main
 
+import (
+	"fmt"
+)
+
+func expand(s string, f func(string) string) string {
+	result := ""
+	for i := 0; i < len(s); i++ {
+		if s[i] == '$' && i+1 < len(s) && isLetter(s[i+1]) {
+			j := i + 1
+			for j < len(s) && isAlphaNumeric(s[j]) {
+				j++
+			}
+			varName := s[i+1 : j]
+			result += f(varName)
+			i = j - 1
+		} else {
+			result += string(s[i])
+		}
+	}
+	return result
+}
+
+func isLetter(c byte) bool {
+	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
+}
+
+func isAlphaNumeric(c byte) bool {
+	return isLetter(c) || (c >= '0' && c <= '9')
+}
+
+func main() {
+	f := func(name string) string {
+		m := map[string]string{
+			"USER": "alice",
+			"HOME": "/home/alice",
+		}
+		if v, ok := m[name]; ok {
+			return v
+		}
+		return ""
+	}
+
+	fmt.Println(expand("$USER lives in $HOME", f))
+}
 ```
