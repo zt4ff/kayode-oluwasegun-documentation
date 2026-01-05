@@ -579,7 +579,7 @@ func PopCountShift(x uint64) int {
 }
 ```
 
-## Exercise 2.5
+### Exercise 2.5
 
 The expression x&(x-1) clears the rightmost non-zero bit of x. Write a version of PopCount that counts bits by using this fact, and assess its performance.
 
@@ -3090,6 +3090,180 @@ func main() {
 ### Exercise 5.8
 
 Exercise 5.8: Modify forEachNode so that the pre and post functions return a boolean result indicating whether to continue the traversal Use it to write a function ElementByID with the following signature that finds the firs t HTML element with the specified id attribute. The function should stop the traversal as soon as a match is found. `func ElementByID(doc *html.Node, id string) *html.Node`
+
+```go
+package main
+
+import (
+	"fmt"
+	"os"
+	"strings"
+
+	"golang.org/x/net/html"
+)
+
+func forEachNode(n *html.Node, pre, post func(n *html.Node) bool) bool {
+	if pre != nil {
+		if !pre(n) {
+			return false
+		}
+	}
+
+	for c := n.FirstChild; c != nil; c = c.NextSibling {
+		if !forEachNode(c, pre, post) {
+			return false
+		}
+	}
+
+	if post != nil {
+		if !post(n) {
+			return false
+		}
+	}
+
+	return true
+}
+
+func ElementByID(doc *html.Node, id string) *html.Node {
+	var result *html.Node
+
+	pre := func(n *html.Node) bool {
+		if n.Type == html.ElementNode {
+			for _, attr := range n.Attr {
+				if attr.Key == "id" && attr.Val == id {
+					result = n
+					return false // Stop traversal
+				}
+			}
+		}
+		return true // Continue traversal
+	}
+
+	forEachNode(doc, pre, nil)
+	return result
+}
+
+func getID(n *html.Node) string {
+	if n.Type != html.ElementNode {
+		return ""
+	}
+	for _, attr := range n.Attr {
+		if attr.Key == "id" {
+			return attr.Val
+		}
+	}
+	return ""
+}
+
+func elementInfo(n *html.Node) string {
+	if n.Type != html.ElementNode {
+		return ""
+	}
+
+	var attrs []string
+	for _, attr := range n.Attr {
+		attrs = append(attrs, fmt.Sprintf("%s='%s'", attr.Key, attr.Val))
+	}
+
+	if len(attrs) > 0 {
+		return fmt.Sprintf("<%s %s>", n.Data, strings.Join(attrs, " "))
+	}
+	return fmt.Sprintf("<%s>", n.Data)
+}
+
+func main() {
+	sampleHTML := `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sample Page</title>
+</head>
+<body>
+    <div class="header" id="main-header">
+        <h1>Welcome</h1>
+    </div>
+    <div class="content" id="main-content">
+        <p id="intro">This is the introduction.</p>
+        <p id="body">This is the main body text.</p>
+        <ul id="item-list">
+            <li id="item-1">First item</li>
+            <li id="item-2">Second item</li>
+            <li id="item-3">Third item</li>
+        </ul>
+    </div>
+    <div class="footer" id="main-footer">
+        <p>Footer content</p>
+    </div>
+</body>
+</html>`
+
+	doc, err := html.Parse(strings.NewReader(sampleHTML))
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "parse error: %v\n", err)
+		os.Exit(1)
+	}
+
+	// Test cases
+	testIDs := []string{
+		"main-header",
+		"main-content",
+		"intro",
+		"item-2",
+		"main-footer",
+		"nonexistent",
+	}
+
+	fmt.Println("=== Testing ElementByID ===\n")
+
+	for _, id := range testIDs {
+		element := ElementByID(doc, id)
+		if element != nil {
+			fmt.Printf("Found element with id='%s':\n", id)
+			fmt.Printf("  Tag: %s\n", elementInfo(element))
+
+			if element.FirstChild != nil && element.FirstChild.Type == html.TextNode {
+				text := strings.TrimSpace(element.FirstChild.Data)
+				if text != "" {
+					fmt.Printf("  Text: %s\n", text)
+				}
+			}
+		} else {
+			fmt.Printf("Element with id='%s' not found\n", id)
+		}
+		fmt.Println()
+	}
+
+	fmt.Println("=== Demonstrating Early Termination ===\n")
+
+	visitCount := 0
+	targetID := "item-2"
+
+	pre := func(n *html.Node) bool {
+		visitCount++
+		if n.Type == html.ElementNode && getID(n) == targetID {
+			fmt.Printf("Found '%s' after visiting %d nodes\n", targetID, visitCount)
+			return false
+		}
+		return true
+	}
+
+	forEachNode(doc, pre, nil)
+	fmt.Printf("Total nodes visited: %d\n\n", visitCount)
+
+	fullCount := 0
+	countAll := func(n *html.Node) bool {
+		fullCount++
+		return true
+	}
+	forEachNode(doc, countAll, nil)
+	fmt.Printf("Full traversal would visit: %d nodes\n", fullCount)
+	fmt.Printf("Early termination saved: %d nodes (%.1f%%)\n",
+		fullCount-visitCount,
+		float64(fullCount-visitCount)/float64(fullCount)*100)
+}
+```
+
+### Exercise 5.9: Write a function expand(s string, f func(string) string) string that replaces each substring ‘‘$foo’’ within s by the text returned by f("foo").
 
 ```go
 
