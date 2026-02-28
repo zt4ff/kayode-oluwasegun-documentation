@@ -1,5 +1,6 @@
 site_name: "Kayode Oluwasegun"
 repo_url: "https://github.com/zt4ff/kayode-oluwasegun-documentation"
+edit_uri: "edit/main/docs/"
 site_author: Kayode Oluwasegun
 theme:
   name: cinder
@@ -15,6 +16,8 @@ nav:
       - The Shelf: reading/the-shelf.md
       - Books Read:
           - "The Go Programming Language": reading/books/read/the-go-programming-language.md
+  - Go:
+      - Testing Output in Go: go/testing-fmt.md
 
 markdown_extensions:
   - admonition
